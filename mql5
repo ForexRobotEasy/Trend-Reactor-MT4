@@ -1,0 +1,68 @@
+
+//+------------------------------------------------------------------+
+//|                                                 Trend Reactor MT4 |
+//|                                    https://forexroboteasy.com     |
+//|                                                      Forex Robot Easy Team |
+//+------------------------------------------------------------------+
+
+//|------------------------------------------------------------------+
+//|                       Trend Reactor MT4 Code                     |
+//|------------------------------------------------------------------+
+
+// Include required libraries
+#include <Trade\Trade.mqh>
+#include <MovingAverages\MovingAverages.mqh>
+
+// Declare global variables
+CTrade trade;
+CMovingAverages ma;
+
+// Initialize the expert advisor
+int OnInit()
+{
+   // Set up trade parameters
+   trade.SetExpertMagicNumber(123456);
+   trade.SetStopLoss(100); // in points
+   trade.SetTakeProfit(200); // in points
+   trade.SetVolume(0.1); // trading volume
+
+   // Set up moving averages parameters
+   ma.SetPeriod(50); // moving average period
+   ma.SetShift(0); // moving average shift
+
+   return(INIT_SUCCEEDED);
+}
+
+// Check trading conditions and open positions
+void OnTick()
+{
+   // Get the current moving average value
+   double maValue = ma.iMA(_Symbol, PERIOD_D1, ma.GetPeriod(), ma.GetShift(), MODE_SMA, PRICE_CLOSE, 0);
+
+   // Check if the current price is above the moving average
+   if(Bid > maValue)
+   {
+      // Check if there are no open positions
+      if(trade.PositionsTotal() == 0)
+      {
+         // Open a buy position
+         trade.Buy(_Symbol, trade.GetVolume(), 0, 0, 0, 0);
+      }
+   }
+   // Check if the current price is below the moving average
+   else if(Bid < maValue)
+   {
+      // Check if there are no open positions
+      if(trade.PositionsTotal() == 0)
+      {
+         // Open a sell position
+         trade.Sell(_Symbol, trade.GetVolume(), 0, 0, 0, 0);
+      }
+   }
+}
+
+// Close all open positions
+void OnDeinit(const int reason)
+{
+   trade.CloseAll();
+}
